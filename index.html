@@ -2,9 +2,14 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="description" content="Sistem Absensi Elektronik SMPBP Paiton"/>
+  <meta name="theme-color" content="#0d47a1"/>
   <title>E-ABSENSI SMPBP PAITON</title>
   <link rel="icon" href="https://image2url.com/r2/default/images/1772672839753-60b6c53e-f4c0-49ea-929a-5ece669e39f0.png" />
+  <link rel="apple-touch-icon" href="https://image2url.com/r2/default/images/1772672839753-60b6c53e-f4c0-49ea-929a-5ece669e39f0.png"/>
+  <link rel="preconnect" href="https://script.google.com" crossorigin/>
+
   <style>
     html, body {
       margin: 0;
@@ -12,20 +17,42 @@
       width: 100%;
       height: 100%;
       background-color: #eee;
-      overflow: hidden; /* Mencegah scroll ganda */
-    }
-
-    .iframe-container {
-      width: 100%;
-      height: 100dvh; /* Menggunakan dvh agar pas di mobile browser */
       overflow: hidden;
     }
-
+    .iframe-container {
+      width: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      position: relative;
+    }
     iframe {
       display: block;
       width: 100%;
       height: 100%;
       border: none;
+    }
+    /* Fallback jika iframe gagal dimuat */
+    .fallback {
+      display: none;
+      position: absolute;
+      inset: 0;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1.5rem;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: #333;
+      background: #f5f5f5;
+    }
+    .fallback h2 { margin: 0 0 .5rem; color: #0d47a1; }
+    .fallback a {
+      margin-top: 1rem;
+      padding: .6rem 1.2rem;
+      background: #0d47a1;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 6px;
     }
   </style>
 </head>
@@ -33,13 +60,38 @@
   <div class="iframe-container">
     <iframe
       id="app"
+      title="E-ABSENSI SMPBP PAITON"
       src="https://script.google.com/macros/s/AKfycbxwMsNmhuZ-ZEUxFRxW5O7ZRxfoxh7iAX1cZcXuA85Lxl-wJIWUpjZsh4XGMeTMIHbc/exec"
       scrolling="yes"
       allowfullscreen="true"
-      webkitallowfullscreen="true"
-      mozallowfullscreen="true"
-      allow="fullscreen; camera; microphone; display-capture; geolocation;">
+      allow="fullscreen; camera; geolocation;"
+      loading="eager"
+      referrerpolicy="no-referrer-when-downgrade"
+      onerror="document.querySelector('.fallback').style.display='flex'">
     </iframe>
+    <noscript>
+      <div class="fallback" style="display:flex">
+        <h2>Aplikasi Memerlukan JavaScript</h2>
+        <p>Mohon aktifkan JavaScript di peramban Anda untuk mengakses E-ABSENSI.</p>
+      </div>
+    </noscript>
+    <div class="fallback">
+      <h2>Gagal Memuat Aplikasi</h2>
+      <p>Periksa koneksi internet Anda lalu coba lagi.</p>
+      <a href="javascript:location.reload()">Muat Ulang</a>
+    </div>
   </div>
+
+  <script>
+    // Deteksi jika iframe benar-benar tidak bisa dimuat dalam 10 detik
+    (function(){
+      var iframe = document.getElementById('app');
+      var loaded = false;
+      iframe.addEventListener('load', function(){ loaded = true; });
+      setTimeout(function(){
+        if (!loaded) document.querySelector('.fallback').style.display = 'flex';
+      }, 10000);
+    })();
+  </script>
 </body>
 </html>
