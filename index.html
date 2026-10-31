@@ -3,60 +3,139 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+
+  <!-- PWA metadata -->
   <meta name="description" content="Sistem Absensi Elektronik SMPBP Paiton"/>
   <meta name="theme-color" content="#0d47a1"/>
+  <meta name="application-name" content="E-ABSENSI"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="E-ABSENSI"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json"/>
+
+  <!-- Icons -->
+  <link rel="icon" type="image/x-icon" href="icons/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png"/>
+  <link rel="mask-icon" href="icons/icon-512.png" color="#0d47a1"/>
+
   <title>E-ABSENSI SMPBP PAITON</title>
-  <link rel="icon" href="https://image2url.com/r2/default/images/1772672839753-60b6c53e-f4c0-49ea-929a-5ece669e39f0.png" />
-  <link rel="apple-touch-icon" href="https://image2url.com/r2/default/images/1772672839753-60b6c53e-f4c0-49ea-929a-5ece669e39f0.png"/>
-  <link rel="preconnect" href="https://script.google.com" crossorigin/>
 
   <style>
+    * { box-sizing: border-box; }
     html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #eee;
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
+      background-color: #0d47a1;
       overflow: hidden;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
+
+    /* Loading screen awal (akan hilang setelah iframe load) */
+    .splash {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #0d47a1 0%, #1565c0 100%);
+      color: #fff; text-align: center;
+      z-index: 10;
+      transition: opacity .4s ease;
+    }
+    .splash.hide { opacity: 0; pointer-events: none; }
+    .splash img {
+      width: 96px; height: 96px;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,.3);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    .splash h1 {
+      margin: 0 0 .25rem;
+      font-size: 1.25rem; font-weight: 600;
+      letter-spacing: .5px;
+    }
+    .splash p {
+      margin: 0; opacity: .85; font-size: .85rem;
+    }
+    .splash .spinner {
+      margin-top: 1.5rem;
+      width: 32px; height: 32px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    @keyframes spin  { to { transform: rotate(360deg); } }
+
+    /* Iframe container */
     .iframe-container {
-      width: 100%;
-      height: 100dvh;
-      overflow: hidden;
-      position: relative;
+      width: 100%; height: 100dvh;
+      overflow: hidden; position: relative;
+      background: #fff;
     }
     iframe {
       display: block;
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       border: none;
     }
-    /* Fallback jika iframe gagal dimuat */
+
+    /* Fallback bila iframe gagal dimuat */
     .fallback {
       display: none;
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 1.5rem;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 1.5rem;
+      color: #333; background: #f5f5f5;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      color: #333;
-      background: #f5f5f5;
     }
+    .fallback.active { display: flex; }
     .fallback h2 { margin: 0 0 .5rem; color: #0d47a1; }
+    .fallback p  { margin: .25rem 0; max-width: 360px; }
     .fallback a {
-      margin-top: 1rem;
-      padding: .6rem 1.2rem;
-      background: #0d47a1;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 6px;
+      margin-top: 1rem; padding: .65rem 1.4rem;
+      background: #0d47a1; color: #fff;
+      text-decoration: none; border-radius: 8px;
+      font-weight: 500;
     }
+    .fallback a:active { transform: scale(.97); }
+
+    /* Install prompt banner */
+    .install-banner {
+      position: fixed; bottom: 16px; left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: #0d47a1; color: #fff;
+      padding: .75rem 1rem; border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+      display: flex; align-items: center; gap: .75rem;
+      max-width: 92vw; z-index: 20;
+      transition: transform .35s ease;
+    }
+    .install-banner.show { transform: translateX(-50%) translateY(0); }
+    .install-banner .txt { font-size: .85rem; line-height: 1.3; }
+    .install-banner button {
+      border: none; cursor: pointer;
+      padding: .5rem .9rem; border-radius: 6px;
+      font-weight: 600; font-size: .85rem;
+    }
+    .install-banner .btn-install { background: #fff; color: #0d47a1; }
+    .install-banner .btn-dismiss { background: transparent; color: #fff; padding: .5rem; }
   </style>
 </head>
 <body>
+  <!-- Splash screen (loading awal) -->
+  <div class="splash" id="splash">
+    <img src="icons/icon-192.png" alt="Logo"/>
+    <h1>E-ABSENSI</h1>
+    <p>SMPBP PAITON</p>
+    <div class="spinner"></div>
+  </div>
+
   <div class="iframe-container">
     <iframe
       id="app"
@@ -66,31 +145,127 @@
       allowfullscreen="true"
       allow="fullscreen; camera; geolocation;"
       loading="eager"
-      referrerpolicy="no-referrer-when-downgrade"
-      onerror="document.querySelector('.fallback').style.display='flex'">
+      referrerpolicy="no-referrer-when-downgrade">
     </iframe>
+
     <noscript>
-      <div class="fallback" style="display:flex">
-        <h2>Aplikasi Memerlukan JavaScript</h2>
+      <div class="fallback active">
+        <h2>JavaScript Diperlukan</h2>
         <p>Mohon aktifkan JavaScript di peramban Anda untuk mengakses E-ABSENSI.</p>
       </div>
     </noscript>
-    <div class="fallback">
+
+    <div class="fallback" id="fallback">
       <h2>Gagal Memuat Aplikasi</h2>
       <p>Periksa koneksi internet Anda lalu coba lagi.</p>
       <a href="javascript:location.reload()">Muat Ulang</a>
     </div>
   </div>
 
+  <!-- Install banner PWA -->
+  <div class="install-banner" id="installBanner">
+    <div class="txt">
+      <strong>Pasang E-ABSENSI</strong><br/>
+      <span style="opacity:.85">Akses lebih cepat dari layar utama</span>
+    </div>
+    <button class="btn-install" id="btnInstall">Pasang</button>
+    <button class="btn-dismiss" id="btnDismiss" aria-label="Tutup">✕</button>
+  </div>
+
   <script>
-    // Deteksi jika iframe benar-benar tidak bisa dimuat dalam 10 detik
-    (function(){
-      var iframe = document.getElementById('app');
-      var loaded = false;
-      iframe.addEventListener('load', function(){ loaded = true; });
-      setTimeout(function(){
-        if (!loaded) document.querySelector('.fallback').style.display = 'flex';
-      }, 10000);
+    (function () {
+      "use strict";
+
+      /* ---------- Splash control ---------- */
+      var splash = document.getElementById("splash");
+      var iframe = document.getElementById("app");
+      var fallback = document.getElementById("fallback");
+      var iframeLoaded = false;
+
+      // Sembunyikan splash saat iframe selesai dimuat
+      iframe.addEventListener("load", function () {
+        iframeLoaded = true;
+        splash.classList.add("hide");
+        setTimeout(function () { splash.style.display = "none"; }, 500);
+      });
+
+      // Fallback: jika iframe belum load dalam 15 detik
+      setTimeout(function () {
+        if (!iframeLoaded) {
+          splash.style.display = "none";
+          fallback.classList.add("active");
+        }
+      }, 15000);
+
+      /* ---------- Service Worker registration ---------- */
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker
+            .register("sw.js", { scope: "./" })
+            .then(function (reg) {
+              console.log("[PWA] SW registered with scope:", reg.scope);
+
+              // Cek update SW
+              reg.addEventListener("updatefound", function () {
+                var newWorker = reg.installing;
+                newWorker.addEventListener("statechange", function () {
+                  if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                    // SW baru siap — reload otomatis
+                    newWorker.postMessage({ type: "SKIP_WAITING" });
+                    window.location.reload();
+                  }
+                });
+              });
+            })
+            .catch(function (err) {
+              console.warn("[PWA] SW registration failed:", err);
+            });
+        });
+      }
+
+      /* ---------- PWA Install Prompt (beforeinstallprompt) ---------- */
+      var deferredPrompt = null;
+      var installBanner = document.getElementById("installBanner");
+      var btnInstall    = document.getElementById("btnInstall");
+      var btnDismiss    = document.getElementById("btnDismiss");
+
+      window.addEventListener("beforeinstallprompt", function (e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        // Tampilkan banner setelah 3 detik di halaman
+        setTimeout(function () {
+          installBanner.classList.add("show");
+        }, 3000);
+      });
+
+      btnInstall.addEventListener("click", function () {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function (choice) {
+          if (choice.outcome === "accepted") {
+            console.log("[PWA] User accepted install");
+          } else {
+            console.log("[PWA] User dismissed install");
+          }
+          deferredPrompt = null;
+          installBanner.classList.remove("show");
+        });
+      });
+
+      btnDismiss.addEventListener("click", function () {
+        installBanner.classList.remove("show");
+      });
+
+      window.addEventListener("appinstalled", function () {
+        console.log("[PWA] App installed successfully");
+        installBanner.classList.remove("show");
+      });
+
+      /* ---------- Deteksi mode standalone ---------- */
+      if (window.matchMedia("(display-mode: standalone)").matches ||
+          window.navigator.standalone === true) {
+        console.log("[PWA] Running as installed PWA");
+      }
     })();
   </script>
 </body>
